@@ -17,6 +17,9 @@ def send():
     if request.headers['Content-Type'] == 'application/json':
         data = json.dumps(request.json)
         app.pv = data
+        return "Recieved: " + data
+    else:
+        return "Bad request"
 
 if __name__ == '__main__':
     app.run()
