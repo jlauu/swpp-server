@@ -39,13 +39,12 @@ def send():
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json()
         app.last = json.dumps(data)
-        print(data)
         for pv in map(PageVisit, data):
             print(pv)
             db.session.add(pv)
         db.session.commit()
 
-        return "Recieved: " + data
+        return "Recieved: " + app.last
     else:
         return "Bad request"
 
