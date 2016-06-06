@@ -19,7 +19,7 @@ class PageVisit(db.Model):
     time = db.Column(db.Float())
     transition = db.Column(db.String())
 
-    def __init__(json):
+    def __init__(self, json):
         self.sessionid = json['sessionID']
         self.tabid = json['tabid']
         self.windowid = json['windowid']
