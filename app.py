@@ -21,9 +21,9 @@ class PageVisit(db.Model):
 
     def __init__(self, json):
         self.sessionid = json['sessionID']
-        self.tabid = json['tabid']
-        self.windowid = json['windowid']
-        self.srcid = json['srcid']
+        self.tabid = json['tabID']
+        self.windowid = json['windowID']
+        self.srcid = json['srcID']
         self.url = json['url']
         self.time = json['time']
         self.transition = json['transition']
@@ -37,9 +37,11 @@ def index():
 @app.route('/send',methods=['POST'])
 def send():
     if request.headers['Content-Type'] == 'application/json':
-        data = json.dumps(request.json)
-        app.last = data
+        data = request.get_json()
+        app.last = json.dumps(data)
+        print(data)
         for pv in map(PageVisit, data):
+            print(pv)
             db.session.add(pv)
         db.session.commit()
 
