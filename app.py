@@ -16,7 +16,7 @@ def index():
 def send():
     if request.headers['Content-Type'] == 'application/json':
         data = json.dumps(request.json)
-        app.pv = data
+        app.last = data
         return "Recieved: " + data
     else:
         return "Bad request"
