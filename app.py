@@ -30,6 +30,7 @@ class PageVisit(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
 @app.route('/', methods=['GET'])
 def index():
     return "Last message received: " + app.last
@@ -38,7 +39,7 @@ def index():
 def send():
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json()
-        app.last = json.dumps(data)
+        app.last = json.dumps(data, indent=4, separators=(',',': '))
         for pv in map(PageVisit, data):
             print(pv)
             db.session.add(pv)
