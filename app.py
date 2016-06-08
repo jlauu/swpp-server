@@ -33,7 +33,7 @@ class PageVisit(db.Model):
 
 @app.route('/', methods=['GET'])
 def index():
-    return "Last message received: " + app.last
+    return app.last
 
 @app.route('/send',methods=['POST'])
 def send():
