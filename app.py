@@ -8,6 +8,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.last = ""
 
+class LinkClick(db.Model):
+    __tablename__ = 'linkclicks'
+    id = db.Column(db.Integer, primary_key=True)
+    src = db.Column(db.String())
+    dest = db.Column(db.String())
+    time = db.Column(db.Integer());
+
+    def __init__(self, json):
+        self.src = json['from']
+        self.dest = json['to']
+        self.time = json['time']
+
 class PageVisit(db.Model):
     __tablename__ = 'pagevisits'
     id = db.Column(db.Integer, primary_key=True)
@@ -35,8 +47,21 @@ class PageVisit(db.Model):
 def index():
     return app.last
 
-@app.route('/send',methods=['POST'])
-def send():
+@app.route('/sendLinks',methods=['POST'])
+def sendLinks():
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json()
+        app.last = json.dumps(data, indent=4, separators=(',',': '))
+        for lc in map(LinkClick, data):
+            db.session.add(lc)
+        db.session.commit()
+
+        return "Recieved: " + app.last
+    else:
+        return "Bad request"
+
+@app.route('/sendVisits',methods=['POST'])
+def sendVisits():
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json()
         app.last = json.dumps(data, indent=4, separators=(',',': '))
