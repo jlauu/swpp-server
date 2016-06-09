@@ -11,7 +11,7 @@ app.last = ""
 class PageVisit(db.Model):
     __tablename__ = 'pagevisits'
     id = db.Column(db.Integer, primary_key=True)
-    sessionid = db.Column(db.Integer)
+    sessionid = db.Column(db.String())
     tabid = db.Column(db.Integer)
     windowid = db.Column(db.Integer)
     srcid = db.Column(db.Integer)
