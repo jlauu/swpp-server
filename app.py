@@ -11,10 +11,10 @@ app.last = ""
 class LinkClick(db.Model):
     __tablename__ = 'linkclicks'
     id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.String());
     src = db.Column(db.String())
     dest = db.Column(db.String())
     time = db.Column(db.Integer());
+    userid = db.Column(db.String());
 
     def __init__(self, json):
         self.userid = json['userID']
