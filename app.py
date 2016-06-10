@@ -13,14 +13,14 @@ class LinkClick(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     src = db.Column(db.String())
     dest = db.Column(db.String())
-    time = db.Column(db.Integer());
+    time = db.Column(db.BigInteger());
     userid = db.Column(db.String());
 
     def __init__(self, json):
-        self.userid = json['userID']
         self.src = json['from']
         self.dest = json['to']
         self.time = json['time']
+        self.userid = json['userID']
 
 class PageVisit(db.Model):
     __tablename__ = 'pagevisits'
