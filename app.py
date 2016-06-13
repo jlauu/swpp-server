@@ -8,6 +8,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.last = ""
 
+class InteractionEvent(db.Model):
+    __tablename__ = 'interactions'
+    id = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.String());
+    event = db.Column(db.String());
+    url = db.Column(db.String());
+    time = db.Column(db.BigInteger());
+    
+    def __init__(self, json):
+        self.userid = json['userID']
+        self.url = json['url']
+        self.event = json['event']
+        self.time = json['time']
+
 class LinkClick(db.Model):
     __tablename__ = 'linkclicks'
     id = db.Column(db.Integer, primary_key=True)
@@ -48,6 +62,30 @@ class PageVisit(db.Model):
 @app.route('/', methods=['GET'])
 def index():
     return app.last
+
+@app.route('/send', methods=['POST'])
+def send():
+    if request.headers['Content-type'] == 'application/json':
+        json = request.get_json()
+        ty = json['type']
+        data = json['data']
+        app.last = json.dumps(data, indent=4, separators=(',',': '))
+        if ty == 'pages':
+            [db.session.add(pv) for pv in map(PageVisit, data)]
+            db.session.commit()
+        elif ty == 'links':
+            [db.session.add(l) for l in map(LinkClick, data)]
+            db.session.commit()
+        elif ty == 'interactions':
+            [db.session.add(i) for i in map(InteractionEvent, data)]
+            db.session.commit()
+        else:
+            return "Bad request"
+        return "Received: " + app.last
+    else:
+        return "Bad request"
+
+## DEPRECATED API BELOW
 
 @app.route('/sendLinks',methods=['POST'])
 def sendLinks():
