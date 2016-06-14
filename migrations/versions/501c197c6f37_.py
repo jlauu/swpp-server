@@ -16,14 +16,13 @@ import sqlalchemy as sa
 
 def upgrade():
     op.create_table('interactions',
-    sa.PrimaryKeyConstraint('id'),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('userid', sa.String(), nullable=True),
     sa.Column('event', sa.String(), nullable=True),
-    sa.Column('windowid', sa.Integer(), nullable=True),
     sa.Column('url', sa.String(), nullable=True),
     sa.Column('time', sa.BigInteger(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
     )
-    pass
 
 
 def downgrade():
