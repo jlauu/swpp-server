@@ -66,9 +66,9 @@ def index():
 @app.route('/send', methods=['POST'])
 def send():
     if request.headers['Content-type'] == 'application/json':
-        json = request.get_json()
-        ty = json['type']
-        data = json['data']
+        msg = request.get_json()
+        ty = msg['type']
+        data = msg['data']
         app.last = json.dumps(data, indent=4, separators=(',',': '))
         if ty == 'pages':
             [db.session.add(pv) for pv in map(PageVisit, data)]
