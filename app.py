@@ -8,56 +8,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.last = ""
 
-class InteractionEvent(db.Model):
-    __tablename__ = 'interactions'
-    id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.String());
-    event = db.Column(db.String());
-    url = db.Column(db.String());
-    time = db.Column(db.BigInteger());
-    
-    def __init__(self, json):
-        self.userid = json['userID']
-        self.url = json['url']
-        self.event = json['event']
-        self.time = json['time']
-
-class LinkClick(db.Model):
-    __tablename__ = 'linkclicks'
-    id = db.Column(db.Integer, primary_key=True)
-    src = db.Column(db.String())
-    dest = db.Column(db.String())
-    time = db.Column(db.BigInteger());
-    userid = db.Column(db.String());
-
-    def __init__(self, json):
-        self.src = json['from']
-        self.dest = json['to']
-        self.time = json['time']
-        self.userid = json['userID']
-
-class PageVisit(db.Model):
-    __tablename__ = 'pagevisits'
-    id = db.Column(db.Integer, primary_key=True)
-    sessionid = db.Column(db.String())
-    tabid = db.Column(db.Integer)
-    windowid = db.Column(db.Integer)
-    srcid = db.Column(db.Integer)
-    url = db.Column(db.String())
-    time = db.Column(db.Float())
-    transition = db.Column(db.String())
-
-    def __init__(self, json):
-        self.sessionid = json['sessionID']
-        self.tabid = json['tabID']
-        self.windowid = json['windowID']
-        self.srcid = json['srcID']
-        self.url = json['url']
-        self.time = json['time']
-        self.transition = json['transition']
-
-    def __repr__(self):
-        return '<id {}>'.format(self.id)
+from models import *
 
 @app.route('/', methods=['GET'])
 def index():
