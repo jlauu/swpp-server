@@ -1,8 +1,8 @@
 import os
-from flask import Flask, request, json, jsonify
+from flask import Flask, request, json, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -13,6 +13,10 @@ from models import *
 @app.route('/', methods=['GET'])
 def index():
     return app.last
+
+@app.route('/graph', methods=['GET'])
+def graph():
+   return render_template('graph.html')
 
 @app.route('/send', methods=['POST'])
 def send():
