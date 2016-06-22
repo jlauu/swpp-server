@@ -1,4 +1,6 @@
 *.sw*
+*test*
+static/*.json
 data/
 __pycache__/
 backups/
