@@ -22,7 +22,7 @@ def main(filename):
 def outputGraphFiles(gid, graph):
     nodes = []
     links = []
-    graph.getConnectedComponents()
+    components = graph.getConnectedComponents()
     for n_id in graph.nodes:
         nodes.append({'url':graph.nodes[n_id], 'id': n_id, 'group':graph.groups[n_id]})
     for src, dests in graph.adjlist.items():
@@ -34,8 +34,10 @@ def outputGraphFiles(gid, graph):
     links = [ {'value':1,'source': l['source'], 'target':l['target']} for l in links]
     print(len(links))
     with open("%s.json" % gid, 'w') as f:
-        f.write(json.dumps({'nodes':nodes,'links':links}))
-
+        f.write(json.dumps({'nodes':nodes,
+                            'links':links, 
+                            'groups': [gid for gid, ns in components.items()]
+                            }))
 if __name__ == "__main__":
     import sys
     main(sys.argv[1])

@@ -1,31 +1,39 @@
+'use strict';
 var SWPP = (function () {
     var swpp = {
         width: 1400,
         height: 700,
+        data: null,
         links: [],
         nodes: [],
         hover: {},
         force: null,
+        cluster_loci: {}
     };
     swpp.init = function (id) {
         var width = swpp.width,
             height = swpp.height;
 
         var force = d3.layout.force()
-            .charge(-120)
-            .linkDistance(30)
+/*            .charge(-120)*/
+/*            .gravity(.15)*/
+/*            .linkDistance(30)*/
             .size([width,height])
         swpp.force = force;
 
         var color = d3.scale.category20();
-
         var svg = d3.select("body").append("svg")
             .attr("width",width)
             .attr("height",height)
-        
-        d3.json(id + ".json", function (error, graph) {
-            if (error) throw error;
+
+        d3.json(id + ".json", function (error, json) {
+            if (error) reject(error);
+            swpp.data = json;
+            var graph = json;
             swpp.nodes = graph.nodes;
+            for (var i in graph.groups) {
+                swpp.cluster_loci[graph.groups[i]] = {'x':width/2, 'y':height/2};
+            }
             graph.links.forEach(function (e) {
                 var sourceNode = graph.nodes.find(function (n) {
                     return n.id === e.source;
@@ -39,7 +47,6 @@ var SWPP = (function () {
                     value: e.value
                 });
             });
-            
             force
                 .nodes(swpp.nodes)
                 .links(swpp.links)
@@ -69,19 +76,21 @@ var SWPP = (function () {
                 .attr("marker-end", "url(#end)");
 
             // define the nodes
-            var node = svg.selectAll(".node")
+            var nodes = svg.selectAll(".node")
                 .data(force.nodes())
               .enter().append("g")
                 .attr("class", "node")
+                .attr("cx", function (d) {return d.x;})
+                .attr("cy", function (d) {return d.y;})
                 .style("fill", function (d) {return color(d.group); })
                 .call(force.drag);
 
             // add the nodes
-            node.append("circle")
+            nodes.append("circle")
                 .attr("r", 5);
 
             // add the curvy lines
-            function tick() {
+            function tick(e) {
                 path.attr("d", function(d) {
                     var dx = d.target.x - d.source.x,
                         dy = d.target.y - d.source.y,
@@ -93,10 +102,13 @@ var SWPP = (function () {
                         d.target.x + "," + 
                         d.target.y;
                 });
-
-                node
-                    .attr("transform", function(d) { 
-                    return "translate(" + d.x + "," + d.y + ")"; });
+                
+                var k = 20 * e.alpha;
+                nodes.attr("transform", function (d, i) {
+                    d.y += d.group & 1 ? k : -k;
+                    d.x += d.group & 2 ? k : -k;
+                    return ["translate(",d.x,",",d.y,")"].join(" ");
+                });
             }
 
             // Hovering effects
@@ -125,5 +137,4 @@ var SWPP = (function () {
         });
     };
     return swpp;
-
 }());
