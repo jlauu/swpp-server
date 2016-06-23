@@ -8,16 +8,58 @@ var SWPP = (function () {
         nodes: [],
         hover: {},
         force: null,
-        cluster_loci: {}
+        cluster_foci: {},
+        foci: [],
+        focus_tick: null,
+        theta: null,
     };
+
+    var init_focus_tick = function () {
+        swpp.setRingFocus();
+        return ring_foci_tick;
+    }
+
+    function ring_foci_tick (theta) {
+        var r = Math.min(swpp.width, swpp.height) / 3;
+        if (theta) {
+            swpp.theta = theta;
+        } else if (!swpp.theta) {
+            swpp.theta = 0;
+        }
+        var theta = swpp.theta;
+        theta += Math.log(swpp.foci.length) / 2500;
+        var offset = 2 * Math.PI / (swpp.foci.length)
+        for (var i in swpp.foci) {
+            swpp.foci[i] = {
+                'x': Math.cos(theta + i*offset) * r + swpp.width/2,
+                'y': Math.sin(theta + i*offset) * r + swpp.height
+            }
+        }
+        swpp.theta = theta;
+        swpp.force.alpha(.1);
+    }
+
+    swpp.setRingFocus = function () {
+        if (swpp.data) {
+            swpp.foci = [];
+            var i = 0;
+            swpp.data.groups.forEach(function (g_id) {
+                swpp.cluster_foci[g_id] = i;
+                swpp.foci.push({x:0, y:0});
+                i += 1;
+            });
+            swpp.focus_tick = ring_foci_tick(0);
+        }
+    }
+
     swpp.init = function (id) {
         var width = swpp.width,
             height = swpp.height;
 
         var force = d3.layout.force()
-/*            .charge(-120)*/
-/*            .gravity(.15)*/
-/*            .linkDistance(30)*/
+            .charge(-120)
+            .gravity(0)
+            .linkDistance(30)
             .size([width,height])
         swpp.force = force;
 
@@ -32,7 +74,7 @@ var SWPP = (function () {
             var graph = json;
             swpp.nodes = graph.nodes;
             for (var i in graph.groups) {
-                swpp.cluster_loci[graph.groups[i]] = {'x':width/2, 'y':height/2};
+                swpp.cluster_foci[graph.groups[i]] = {'x':width/2, 'y':height/2};
             }
             graph.links.forEach(function (e) {
                 var sourceNode = graph.nodes.find(function (n) {
@@ -89,8 +131,10 @@ var SWPP = (function () {
             nodes.append("circle")
                 .attr("r", 5);
 
-            // add the curvy lines
+            swpp.focus_tick = init_focus_tick();
+            // DEFINE ticks
             function tick(e) {
+                swpp.focus_tick(0);
                 path.attr("d", function(d) {
                     var dx = d.target.x - d.source.x,
                         dy = d.target.y - d.source.y,
@@ -103,10 +147,16 @@ var SWPP = (function () {
                         d.target.y;
                 });
                 
-                var k = 20 * e.alpha;
                 nodes.attr("transform", function (d, i) {
-                    d.y += d.group & 1 ? k : -k;
-                    d.x += d.group & 2 ? k : -k;
+                    var focus = swpp.foci[swpp.cluster_foci[d.group]];
+                    var x = d.x - focus.x,
+                        y = d.y - focus.y,
+                        l = Math.sqrt(x*x + y*y);
+                    if (l > 1) {
+                        l = l / l * e.alpha;
+                        d.x -= x *= l;
+                        d.y -= y *= l;
+                    }
                     return ["translate(",d.x,",",d.y,")"].join(" ");
                 });
             }
