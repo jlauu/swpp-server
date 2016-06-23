@@ -24,23 +24,18 @@ class Graph:
         components = {}
         for v in self.nodes:
             if self.groups[v] is None:
-                component = self._dfs(v, components)
-                for u in component:
+                components[i] = self._dfs(v)
+                for u in components[i]:
                     self.groups[u] = i
-                components[i] = component
                 i += 1
         return components
 
-    def _dfs(self, start, components):
+    def _dfs(self, start):
         visited, stack = set(), [start]
         while stack:
             v = stack.pop()
             if v not in visited:
                 visited.add(v)
-                if self.groups[v] is not None:
-                    visited.update(components[self.groups[v]])
-                    del components[self.groups[v]]
-                    return list(visited)
                 stack.extend(set(self.adjlist[v]) - visited)
                 stack.extend(set(self._undirectedEdges[v]) - visited)
         return list(visited)
