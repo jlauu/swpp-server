@@ -13,8 +13,9 @@ var SWPP = (function () {
         focus_tick: null,
         theta: null,
         reset_foci: null,
-        ring_clusters: []
+        ring_clusters: [],
     };
+    var cluster_representatives = {}
     
     var init_focus_tick = function () {
         swpp.setRingFocus();
@@ -23,6 +24,7 @@ var SWPP = (function () {
     }
 
     swpp.ring_shift_left = function () {
+        swpp.force.alpha(.2);
         if (swpp.selected) {
             swpp.ring_clusters.push(swpp.selected);
             swpp.foci.push({x:swpp.width/2, y:swpp.height/2});
@@ -32,6 +34,7 @@ var SWPP = (function () {
     }
 
     swpp.ring_shift_right = function () {
+        swpp.force.alpha(.2);
         if (swpp.selected) {
             swpp.ring_clusters = [swpp.selected].concat(swpp.ring_clusters);
             swpp.foci = [{x:swpp.width/2, y:swpp.height/2}].concat(swpp.foci);
@@ -62,15 +65,15 @@ var SWPP = (function () {
         }
         var theta = swpp.theta;
 /*        theta += Math.log(swpp.foci.length) / 2500;*/
-        var offset = 2 * Math.PI / (swpp.foci.length)
+        var offset = 2 * Math.PI / (swpp.foci.length);
+        var a = 2 * Math.log(swpp.foci.length);
         for (var i in swpp.foci) {
             swpp.foci[i] = {
-                'x': 8 * Math.cos(theta + i*offset - Math.PI/2) * r + swpp.width/2,
+                'x': a * Math.cos(theta + i*offset - Math.PI/2) * r + swpp.width/2,
                 'y': 1.2 * Math.sin(theta + i*offset - Math.PI/2) * r + swpp.height*1.2
             }
         }
         swpp.theta = theta;
-        swpp.force.alpha(.1);
     }
 
     swpp.init = function (id) {
@@ -78,7 +81,7 @@ var SWPP = (function () {
             height = swpp.height;
 
         var force = d3.layout.force()
-            .charge(-220)
+            .charge(-120)
             .gravity(0)
             .linkDistance(30)
             .size([width,height])
@@ -94,6 +97,8 @@ var SWPP = (function () {
             swpp.data = json;
             var graph = json;
             swpp.nodes = graph.nodes;
+
+            // Initialize links
             graph.links.forEach(function (e) {
                 var sourceNode = graph.nodes.find(function (n) {
                     return n.id === e.source;
@@ -135,7 +140,7 @@ var SWPP = (function () {
                 .attr("class", "link")
                 .attr("marker-end", "url(#end)");
 
-            // define the nodes
+            // define nodes and data bindings
             var nodes = svg.selectAll(".node")
                 .data(force.nodes())
               .enter().append("g")
@@ -143,10 +148,17 @@ var SWPP = (function () {
                 .attr("cx", function (d) {return d.x;})
                 .attr("cy", function (d) {return d.y;})
                 .style("fill", function (d) {return color(d.group); })
-                .call(force.drag)
-                .on("click", function () {
-                    swpp.select(this);
-                });
+                .call(force.drag);
+            
+            // reference to cluster representative
+            nodes.data().map(function (d) {
+                if (cluster_representatives[d.group]) {
+                    d.rep = false;
+                } else {
+                    d.rep = true;
+                    cluster_representatives[d.group] = d;
+                }
+            });
 
             // add the nodes
             nodes.append("circle")
@@ -169,21 +181,23 @@ var SWPP = (function () {
                 });
                 
                 nodes.attr("transform", function (d, i) {
-                    var focus;
-                    var index = swpp.ring_clusters.indexOf(d.group);
-                    if (index > -1) {
-                        focus = swpp.foci[index];
-                    // default to center
-                    } else {
-                        focus = {x: swpp.width/2, y: swpp.height/2};
-                    }
-                    var x = d.x - focus.x,
-                        y = d.y - focus.y,
-                        l = Math.sqrt(x*x + y*y);
-                    if (l > 1) {
-                        l = l / l * e.alpha;
-                        d.x -= x *= l;
-                        d.y -= y *= l;
+                    if (d.rep) {
+                        var focus;
+                        var index = swpp.ring_clusters.indexOf(d.group);
+                        if (index > -1) {
+                            focus = swpp.foci[index];
+                        // default to center
+                        } else {
+                            focus = {x: swpp.width/2, y: swpp.height/2};
+                        }
+                        var x = d.x - focus.x,
+                            y = d.y - focus.y,
+                            l = Math.sqrt(x*x + y*y);
+                        if (l > 1) {
+                            l = l / l * e.alpha;
+                            d.x -= x *= l;
+                            d.y -= y *= l;
+                        }
                     }
                     return ["translate(",d.x,",",d.y,")"].join(" ");
                 });
