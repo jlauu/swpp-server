@@ -1,8 +1,9 @@
 'use strict';
 var SWPP = (function () {
     var swpp = {
-        width: 1400,
-        height: 700,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        svg: null,
         data: null,
         links: [],
         nodes: [],
@@ -70,10 +71,20 @@ var SWPP = (function () {
         for (var i in swpp.foci) {
             swpp.foci[i] = {
                 'x': a * Math.cos(theta + i*offset - Math.PI/2) * r + swpp.width/2,
-                'y': 1.2 * Math.sin(theta + i*offset - Math.PI/2) * r + swpp.height*1.2
+                'y': 1.2 * Math.sin(theta + i*offset - Math.PI/2) * r + swpp.height*1.3
             }
         }
         swpp.theta = theta;
+    }
+
+    function resize() {
+        swpp.width = window.innerWidth;
+        swpp.height = window.innerHeight;
+        swpp.svg
+            .attr("viewBox", "0 0 "+swpp.width+" "+swpp.height)
+            .attr("width", swpp.width)
+            .attr("height", swpp.width);
+        swpp.force.size([swpp.width,swpp.height]).resume();
     }
 
     swpp.init = function (id) {
@@ -88,9 +99,14 @@ var SWPP = (function () {
         swpp.force = force;
 
         var color = d3.scale.category20();
-        var svg = d3.select("body").append("svg")
-            .attr("width",width)
-            .attr("height",height)
+        var svg = d3.select("div.svg-container").append("svg")
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .classed("svg-content-responsive", true);
+        swpp.svg = svg;
+        resize()
+        d3.select(window).on('resize', function () {
+            resize();
+        });
 
         d3.json(id + ".json", function (error, json) {
             if (error) reject(error);
@@ -151,13 +167,14 @@ var SWPP = (function () {
                 .call(force.drag);
             
             // reference to cluster representative
-            nodes.data().map(function (d) {
+            nodes.data().map(function (d,i) {
                 if (cluster_representatives[d.group]) {
                     d.rep = false;
                 } else {
                     d.rep = true;
                     cluster_representatives[d.group] = d;
                 }
+                d.y = swpp.height * 1.2;
             });
 
             // add the nodes
@@ -190,11 +207,12 @@ var SWPP = (function () {
                         } else {
                             focus = {x: swpp.width/2, y: swpp.height/2};
                         }
+                        var k = e.alpha * 1.5;
                         var x = d.x - focus.x,
                             y = d.y - focus.y,
                             l = Math.sqrt(x*x + y*y);
                         if (l > 1) {
-                            l = l / l * e.alpha;
+                            l = l / l * k;
                             d.x -= x *= l;
                             d.y -= y *= l;
                         }
