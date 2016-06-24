@@ -7,16 +7,50 @@ var SWPP = (function () {
         links: [],
         nodes: [],
         hover: {},
+        selected: null,
         force: null,
-        cluster_foci: {},
         foci: [],
         focus_tick: null,
         theta: null,
+        reset_foci: null,
+        ring_clusters: []
     };
-
+    
     var init_focus_tick = function () {
         swpp.setRingFocus();
+        swpp.reset_foci = swpp.setRingFocus;
         return ring_foci_tick;
+    }
+
+    swpp.ring_shift_left = function () {
+        if (swpp.selected) {
+            swpp.ring_clusters.push(swpp.selected);
+            swpp.foci.push({x:swpp.width/2, y:swpp.height/2});
+        }
+        swpp.selected = swpp.ring_clusters.shift();
+        swpp.foci.shift();
+    }
+
+    swpp.ring_shift_right = function () {
+        if (swpp.selected) {
+            swpp.ring_clusters = [swpp.selected].concat(swpp.ring_clusters);
+            swpp.foci = [{x:swpp.width/2, y:swpp.height/2}].concat(swpp.foci);
+        }
+        swpp.selected = swpp.ring_clusters.pop();
+        swpp.foci.pop();
+    }
+
+    swpp.setRingFocus = function () {
+        if (swpp.data) {
+            swpp.foci = [];
+            swpp.ring_clusters = [];
+            var i = 0;
+            swpp.data.groups.forEach(function (g_id) {
+                swpp.ring_clusters.push(g_id);
+                swpp.foci.push({x:0, y:0});
+            });
+            swpp.focus_tick = ring_foci_tick;
+        }
     }
 
     function ring_foci_tick (theta) {
@@ -27,29 +61,16 @@ var SWPP = (function () {
             swpp.theta = 0;
         }
         var theta = swpp.theta;
-        theta += Math.log(swpp.foci.length) / 2500;
+/*        theta += Math.log(swpp.foci.length) / 2500;*/
         var offset = 2 * Math.PI / (swpp.foci.length)
         for (var i in swpp.foci) {
             swpp.foci[i] = {
-                'x': Math.cos(theta + i*offset) * r + swpp.width/2,
-                'y': Math.sin(theta + i*offset) * r + swpp.height
+                'x': 8 * Math.cos(theta + i*offset - Math.PI/2) * r + swpp.width/2,
+                'y': 1.2 * Math.sin(theta + i*offset - Math.PI/2) * r + swpp.height*1.2
             }
         }
         swpp.theta = theta;
         swpp.force.alpha(.1);
-    }
-
-    swpp.setRingFocus = function () {
-        if (swpp.data) {
-            swpp.foci = [];
-            var i = 0;
-            swpp.data.groups.forEach(function (g_id) {
-                swpp.cluster_foci[g_id] = i;
-                swpp.foci.push({x:0, y:0});
-                i += 1;
-            });
-            swpp.focus_tick = ring_foci_tick(0);
-        }
     }
 
     swpp.init = function (id) {
@@ -57,7 +78,7 @@ var SWPP = (function () {
             height = swpp.height;
 
         var force = d3.layout.force()
-            .charge(-120)
+            .charge(-220)
             .gravity(0)
             .linkDistance(30)
             .size([width,height])
@@ -73,9 +94,6 @@ var SWPP = (function () {
             swpp.data = json;
             var graph = json;
             swpp.nodes = graph.nodes;
-            for (var i in graph.groups) {
-                swpp.cluster_foci[graph.groups[i]] = {'x':width/2, 'y':height/2};
-            }
             graph.links.forEach(function (e) {
                 var sourceNode = graph.nodes.find(function (n) {
                     return n.id === e.source;
@@ -125,7 +143,10 @@ var SWPP = (function () {
                 .attr("cx", function (d) {return d.x;})
                 .attr("cy", function (d) {return d.y;})
                 .style("fill", function (d) {return color(d.group); })
-                .call(force.drag);
+                .call(force.drag)
+                .on("click", function () {
+                    swpp.select(this);
+                });
 
             // add the nodes
             nodes.append("circle")
@@ -148,7 +169,14 @@ var SWPP = (function () {
                 });
                 
                 nodes.attr("transform", function (d, i) {
-                    var focus = swpp.foci[swpp.cluster_foci[d.group]];
+                    var focus;
+                    var index = swpp.ring_clusters.indexOf(d.group);
+                    if (index > -1) {
+                        focus = swpp.foci[index];
+                    // default to center
+                    } else {
+                        focus = {x: swpp.width/2, y: swpp.height/2};
+                    }
                     var x = d.x - focus.x,
                         y = d.y - focus.y,
                         l = Math.sqrt(x*x + y*y);
@@ -176,7 +204,7 @@ var SWPP = (function () {
                         t = t.split('www.')
                         t = t.length > 1 ? t[1] : t[0];
                         return t.substring(0, 30);
-                    });
+                 });
               })
               .on("mouseleave", function () {
                  var node = d3.select(this)
@@ -184,6 +212,16 @@ var SWPP = (function () {
                  id = node.data()[0].id;
                  d3.selectAll('text#node'+id.toString()).remove();
               });
+
+            // Key Events
+            d3.select("body")
+                .on('keydown', function () {
+                    if (d3.event.keyCode == 37) { // left
+                        swpp.ring_shift_left();
+                    } else if (d3.event.keyCode == 39) { // right
+                        swpp.ring_shift_right();
+                    }
+                });
         });
     };
     return swpp;
