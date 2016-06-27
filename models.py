@@ -1,4 +1,15 @@
+from sqlalchemy.dialects.postgresql import JSON
+
 from app import db
+
+class UserGraph(db.Model):
+    __tablename__ = "graphs"
+    userid = db.Column(db.String(), unique=True, primary_key=True)
+    data = db.Column(JSON,nullable=False)
+
+    def __init__(self, userid, json):
+        self.userid = userid
+        self.json = json
 
 class InteractionEvent(db.Model):
     __tablename__ = 'interactions'

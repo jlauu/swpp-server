@@ -16,7 +16,8 @@ def index():
 
 @app.route('/graph', methods=['GET'])
 def graph():
-   return render_template('graph.html')
+   graph = UserGraph.query.filter_by(userid=request.args.get('uid')).first()
+   return render_template('graph.html', json=graph.data)
 
 @app.route('/send', methods=['POST'])
 def send():
