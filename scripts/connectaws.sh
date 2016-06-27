@@ -1,6 +1,6 @@
 psql \
-    --host=swpp-server.cgc1gmwbjbp4.us-west-2.rds.amazonaws.com \
+    --host=swpp-server.chft4lsytu8w.us-east-1.rds.amazonaws.com \
     --port=5432 \
     --username "opaqe" \
-    --password "w8a4s5d6" \
+    --password \
     --dbname=swpp_server

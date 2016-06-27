@@ -1,6 +1,7 @@
 *.sw*
 *test*
 static/*.json
-data/
+data/*
 __pycache__/
 backups/
+rootkey.csv

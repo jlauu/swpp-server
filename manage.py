@@ -5,7 +5,7 @@ from scripts.generate_graphs import formatJSON
 from scripts.Graph import *
 import json
 from models import *
-import os
+import os, boto3
 
 from app import app, db
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -14,6 +14,9 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
+
+def upload_data(file):
+    
 
 @manager.command
 def generate_graphs():
