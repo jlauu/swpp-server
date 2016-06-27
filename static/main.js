@@ -122,7 +122,7 @@ var SWPP = (function () {
         });
 
         d3.json(id + ".json", function (error, json) {
-            if (error) reject(error);
+            if (error) throw error;
             swpp.data = json;
             var graph = json;
             swpp.nodes = graph.nodes;
