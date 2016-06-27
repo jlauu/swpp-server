@@ -54,6 +54,17 @@ var SWPP = (function () {
                 swpp.foci.push({x:0, y:0});
             });
             swpp.focus_tick = ring_foci_tick;
+            swpp.force.linkDistance(function (d) {
+                if (swpp.selected) {
+                    var s_id = swpp.selected.__data__.group;
+                    console.log(s_id);
+                    if (s_id == d.source.group || s_id == d.target.group) {
+                        return 50;
+                    }
+                }
+                return 15;
+            });
+            swpp.force.start();
         }
     }
 
@@ -92,9 +103,11 @@ var SWPP = (function () {
             height = swpp.height;
 
         var force = d3.layout.force()
-            .charge(-120)
+            .charge(-40)
             .gravity(0)
-            .linkDistance(30)
+            .linkDistance(12)
+            .linkStrength(.8)
+            .friction(.85)
             .size([width,height])
         swpp.force = force;
 
@@ -132,7 +145,6 @@ var SWPP = (function () {
                 .nodes(swpp.nodes)
                 .links(swpp.links)
                 .on("tick", tick)
-                .start();
 
             // build the arrow.
             svg.append("svg:defs").selectAll("marker")
@@ -158,13 +170,17 @@ var SWPP = (function () {
 
             // define nodes and data bindings
             var nodes = svg.selectAll(".node")
-                .data(force.nodes())
+                .data(force.nodes(), function (d) {return d.id;})
               .enter().append("g")
                 .attr("class", "node")
                 .attr("cx", function (d) {return d.x;})
                 .attr("cy", function (d) {return d.y;})
                 .style("fill", function (d) {return color(d.group); })
-                .call(force.drag);
+                .call(force.drag)
+                .on("dblclick", function (d) {
+                    var win = window.open(d.url, '_blank');
+                    win.focus();
+                });
             
             // reference to cluster representative
             nodes.data().map(function (d,i) {
@@ -223,10 +239,9 @@ var SWPP = (function () {
 
             // Hovering effects
             d3.selectAll(".node")
-              .on("mouseover", function () {
-                 id = d3.select(this).data()[0].id;
+              .on("mouseover", function (d) {
                  var text = d3.select(this).append("text")
-                    .attr('id', 'node' + id.toString())
+                    .attr('id', 'node' + d.id.toString())
                     .attr("x", 12)
                     .attr("dy", ".35em")
                     .text(function (d) {
@@ -235,14 +250,13 @@ var SWPP = (function () {
                         t = t.hostname + t.pathname;
                         t = t.split('www.')
                         t = t.length > 1 ? t[1] : t[0];
-                        return t.substring(0, 30);
+                        return t;
                  });
               })
-              .on("mouseleave", function () {
+              .on("mouseleave", function (d) {
                  var node = d3.select(this)
                  node.classed('hover', false);
-                 id = node.data()[0].id;
-                 d3.selectAll('text#node'+id.toString()).remove();
+                 d3.selectAll('text#node'+d.id.toString()).remove();
               });
 
             // Key Events
