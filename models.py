@@ -1,6 +1,15 @@
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, ARRAY
 
 from app import db
+
+class UrlKeywords(db.Model):
+    __tablename__ = "keywords"
+    url = db.Column(db.String(), unique=True, primary_key=True)
+    keywords = db.Column(ARRAY(db.String()))
+
+    def __init__(self, url, *kws):
+        self.url = url
+        self.keywords = kws
 
 class UserGraph(db.Model):
     __tablename__ = "graphs"

@@ -1,6 +1,7 @@
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from scripts.keywordsExtract import main as extract_keywords
+from sqlalchemy.sql import text
+from scripts.keywordsExtract import keywords as extract_keywords
 from scripts.generate_graphs import formatJSON
 from scripts.Graph import *
 import json, os
@@ -17,8 +18,15 @@ edges_query =  """SELECT sessionid as uid, src, dest, lc.time \
                   FROM pagevisits as pv INNER JOIN linkclicks as lc \
                   ON (lc.userid = pv.sessionid AND (lc.src = pv.url OR \
                   lc.dest = pv.url))"""
-upsert_query = """INSERT INTO graphs (userid, data) VALUES({0},'{1}') \
-                  ON CONFLICT (userid) DO UPDATE SET data = EXCLUDED.data;"""
+def upsert_graphs(userid, data):
+    return text("""INSERT INTO graphs (userid, data) VALUES(:userid, :data) \
+                ON CONFLICT (userid) DO UPDATE SET data = EXCLUDED.data;""").\
+                bindparams(userid=userid,data=data)
+def upsert_keywords(url, keywords):
+    return text("""INSERT INTO keywords (url, keywords) VALUES(:url,:kws) \
+                ON CONFLICT (url) DO UPDATE \
+                SET keywords = EXCLUDED.keywords;""").\
+                bindparams(url=url,kws=keywords)
 @manager.command
 def generate_graphs():
     """Outputs graph data for the d3 front-end"""
@@ -33,15 +41,29 @@ def generate_graphs():
     queries = []
     for gid, g in graphs.items():
         json_str = json.dumps(formatJSON(gid, g))
-        queries.append(upsert_query.format(gid, json_str))
-    db.engine.execute("".join(queries).replace("%","%%"))
+        queries.append(upsert_graphs(gid, json_str))
+    for q in queries:
+        db.engine.execute(q)
 
 @manager.command
 def update_keywords():
     """Reads urls in db and outputs their keywords"""
-    kws = extract_keywords(*[p.url for p in PageVisit.query.limit(100).all()])
-    with open(app.config['DATA_DIR'] + "keywords.json", 'w') as f:
-        f.write(kws)
+    urls = []
+    queries = []
+    attempted = set()
+    # find keywords for only urls we display on the graph
+    for nodes in [row.data['nodes'] for row in UserGraph.query.all()]:
+        urls.extend(n['url'] for n in nodes)
+    for i,url in enumerate(urls):
+        if url in attempted: continue
+        attempted.add(url)
+        try:
+            kws = extract_keywords(url)
+        except:
+            continue
+        queries.append(upsert_keywords(url, kws))
+    for q in queries:
+        db.engine.execute(q)
 
 if __name__ == '__main__':
     manager.run()
