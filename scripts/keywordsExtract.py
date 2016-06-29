@@ -31,8 +31,8 @@ common_meta_tags = [
 def main(*urls):
     kws = {}
     fix = lambda url: url if 'http://' in url or 'https://' in url else 'http://'+url
-    for url in [u for u in map(fix, urls)]:
-        kws[url] = keywords(url)
+    for url in urls:
+        kws[url] = keywords(fix(url))
     return json.dumps(kws, indent=4, separators=(',',': '))
 
 def keywords(url):
