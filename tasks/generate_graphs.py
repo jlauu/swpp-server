@@ -3,6 +3,7 @@ from sqlalchemy.sql import text
 from json import dumps
 from scripts.GraphUtils import *
 from app import db
+from models import UrlKeywords
 
 def upsert_graphs(userid, data):
     return text("""INSERT INTO graphs (userid, data) VALUES(:userid, :data) \
@@ -21,9 +22,16 @@ class GenerateGraphs(Command):
             if e['uid'] not in graphs:
                 graphs[e['uid']] = Graph()
             graphs[e['uid']].addEdge(e['src'].strip(), e['dest'].strip())
-        queries = []
-        for gid, g in graphs.items():
-            json = dumps(formatJSON(gid, g))
-            queries.append(upsert_graphs(gid, json))
-        for q in queries:
-            db.engine.execute(q)
+        for uid, g in graphs.items():
+            clusters = self.getClusters(g.ids)
+            json = formatJSON(uid, g, clusters)
+            db.engine.execute(upsert_graphs(uid, json))
+
+    def getClusters(self, graph):
+        """Creates a map from node ids to their cluster"""
+        nodes = graph.ids
+        clusters = {}
+        rows = UrlKeywords.query.filter(UrlKeywords.url.in_(nodes.keys()))
+        for url, cluster in [ (row.url, row.cluster) for row in rows]:
+            clusters[nodes[url]] = cluster
+        return clusters
