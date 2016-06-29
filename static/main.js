@@ -269,7 +269,6 @@ var SWPP = (function () {
                 } else if (d3.event.keyCode == 39) { // right
                     swpp.ring_shift_right();
                 }
-                console.log(swpp.ring_clusters, swpp.selected);
             });
     };
     return swpp;

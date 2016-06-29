@@ -21,7 +21,6 @@ def formatJSON(gid, graph, clusters={}):
     nodes = []
     links = []
     components = graph.getConnectedComponents(clusters)
-    print(components)
     for n_id in graph.nodes:
         nodes.append({'url':graph.nodes[n_id], 'id': n_id, 'group':graph.groups[n_id]})
     for src, dests in graph.adjlist.items():
