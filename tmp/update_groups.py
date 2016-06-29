@@ -1,7 +1,7 @@
 from app import db
 from sqlalchemy.sql import text
 
-with open('url-cluster-em-100words.csv') as f:
+with open('tmp/url-cluster-em-100words.csv') as f:
     skip = True
     urls = []
     for line in f:
