@@ -6,10 +6,12 @@ class UrlKeywords(db.Model):
     __tablename__ = "keywords"
     url = db.Column(db.String(), unique=True, primary_key=True)
     keywords = db.Column(ARRAY(db.String()))
+    group = db.Column(db.Integer(), nullable=True)
 
-    def __init__(self, url, *kws):
+    def __init__(self, url, *kws, group=None):
         self.url = url
         self.keywords = kws
+        self.group = group
 
 class UserGraph(db.Model):
     __tablename__ = "graphs"
