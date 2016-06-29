@@ -8,7 +8,7 @@ var SWPP = (function () {
         links: [],
         nodes: [],
         hover: {},
-        selected: null,
+        selected: null, // cluster id
         force: null,
         foci: [],
         focus_tick: null,
@@ -26,7 +26,7 @@ var SWPP = (function () {
 
     swpp.ring_shift_left = function () {
         swpp.force.alpha(.2);
-        if (swpp.selected) {
+        if (swpp.selected == 0 || swpp.selected) {
             swpp.ring_clusters.push(swpp.selected);
             swpp.foci.push({x:swpp.width/2, y:swpp.height/2});
         }
@@ -36,7 +36,7 @@ var SWPP = (function () {
 
     swpp.ring_shift_right = function () {
         swpp.force.alpha(.2);
-        if (swpp.selected) {
+        if (swpp.selected == 0 || swpp.selected) {
             swpp.ring_clusters = [swpp.selected].concat(swpp.ring_clusters);
             swpp.foci = [{x:swpp.width/2, y:swpp.height/2}].concat(swpp.foci);
         }
@@ -103,10 +103,10 @@ var SWPP = (function () {
             height = swpp.height;
 
         var force = d3.layout.force()
-            .charge(-40)
+            .charge(-120)
             .gravity(0)
-            .linkDistance(12)
-            .linkStrength(.8)
+            .linkDistance(30)
+            .linkStrength(.2)
             .friction(.85)
             .size([width,height])
         swpp.force = force;
@@ -212,8 +212,8 @@ var SWPP = (function () {
             });
             
             nodes.attr("transform", function (d, i) {
+                var focus, k;
                 if (d.rep) {
-                    var focus;
                     var index = swpp.ring_clusters.indexOf(d.group);
                     if (index > -1) {
                         focus = swpp.foci[index];
@@ -221,15 +221,19 @@ var SWPP = (function () {
                     } else {
                         focus = {x: swpp.width/2, y: swpp.height/2};
                     }
-                    var k = e.alpha * 1.5;
-                    var x = d.x - focus.x,
-                        y = d.y - focus.y,
-                        l = Math.sqrt(x*x + y*y);
-                    if (l > 1) {
-                        l = l / l * k;
-                        d.x -= x *= l;
-                        d.y -= y *= l;
-                    }
+                    k = e.alpha * 1.5;
+                } else {
+                    var rep = cluster_representatives[d.group];
+                    focus = {x:rep.x, y:rep.y};
+                    k = e.alpha * .2;
+                }
+                var x = d.x - focus.x,
+                    y = d.y - focus.y,
+                    l = Math.sqrt(x*x + y*y);
+                if (l > 1) {
+                    l = l / l * k;
+                    d.x -= x *= l;
+                    d.y -= y *= l;
                 }
                 return ["translate(",d.x,",",d.y,")"].join(" ");
             });
@@ -265,6 +269,7 @@ var SWPP = (function () {
                 } else if (d3.event.keyCode == 39) { // right
                     swpp.ring_shift_right();
                 }
+                console.log(swpp.ring_clusters, swpp.selected);
             });
     };
     return swpp;

@@ -5,6 +5,11 @@ from scripts.GraphUtils import *
 from app import db
 from models import UrlKeywords
 
+edges_query =  """SELECT sessionid as uid, src, dest, lc.time \
+                  FROM pagevisits as pv INNER JOIN linkclicks as lc \
+                  ON (lc.userid = pv.sessionid AND (lc.src = pv.url OR \
+                  lc.dest = pv.url))"""
+
 def upsert_graphs(userid, data):
     return text("""INSERT INTO graphs (userid, data) VALUES(:userid, :data) \
                 ON CONFLICT (userid) DO UPDATE SET data = EXCLUDED.data;""").\
@@ -23,9 +28,10 @@ class GenerateGraphs(Command):
                 graphs[e['uid']] = Graph()
             graphs[e['uid']].addEdge(e['src'].strip(), e['dest'].strip())
         for uid, g in graphs.items():
-            clusters = self.getClusters(g.ids)
+            clusters = self.getClusters(g)
             json = formatJSON(uid, g, clusters)
-            db.engine.execute(upsert_graphs(uid, json))
+            query = upsert_graphs(uid, json)
+            db.engine.execute(upsert_graphs(uid, dumps(json)))
 
     def getClusters(self, graph):
         """Creates a map from node ids to their cluster"""
@@ -33,5 +39,6 @@ class GenerateGraphs(Command):
         clusters = {}
         rows = UrlKeywords.query.filter(UrlKeywords.url.in_(nodes.keys()))
         for url, cluster in [ (row.url, row.cluster) for row in rows]:
-            clusters[nodes[url]] = cluster
+            if cluster is not None:
+                clusters[nodes[url]] = cluster
         return clusters

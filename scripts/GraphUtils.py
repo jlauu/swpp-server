@@ -21,6 +21,7 @@ def formatJSON(gid, graph, clusters={}):
     nodes = []
     links = []
     components = graph.getConnectedComponents(clusters)
+    print(components)
     for n_id in graph.nodes:
         nodes.append({'url':graph.nodes[n_id], 'id': n_id, 'group':graph.groups[n_id]})
     for src, dests in graph.adjlist.items():
@@ -89,7 +90,8 @@ class Graph:
                 components[i] = self._dfs(v, self.visited)
                 for u in components[i]:
                     if u in init:
-                        [self.groups.update({w:init[u]}) for w in components[i]]
+                        for w in components[i]:
+                            self.groups[w] = init[u]
                         components[init[u]].extend(components[i])
                         del components[i]
                         break
@@ -104,8 +106,6 @@ class Graph:
     def _dfs(self, start, visited=set()):
         component, stack = set(), [start]
         while stack:
-            print('\tVisited:', visited)
-            print('\tStack:', stack)
             v = stack.pop()
             if v not in visited:
                 visited.add(v)

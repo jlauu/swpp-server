@@ -15,19 +15,11 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 manager.add_command('generate_graphs', GenerateGraphs())
 
-edges_query =  """SELECT sessionid as uid, src, dest, lc.time \
-                  FROM pagevisits as pv INNER JOIN linkclicks as lc \
-                  ON (lc.userid = pv.sessionid AND (lc.src = pv.url OR \
-                  lc.dest = pv.url))"""
 def upsert_keywords(url, keywords):
     return text("""INSERT INTO keywords (url, keywords) VALUES(:url,:kws) \
                 ON CONFLICT (url) DO UPDATE \
                 SET keywords = EXCLUDED.keywords;""").\
                 bindparams(url=url,kws=keywords)
-
-@manager.command
-def generate_graphs():
-    """Outputs graph data for the d3 front-end"""
 
 @manager.command
 def update_keywords():
