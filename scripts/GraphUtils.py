@@ -1,3 +1,39 @@
+import os, json
+
+def parseGraphCSV(filename):
+    """Parses the internal csv of edges and returns a dictionary of graphs"""
+    graphs = {}
+    with open(filename) as f: 
+        for line in f:
+            parts = line.split(",")
+            if parts[0] not in graphs.keys():
+                graphs[parts[0]] = Graph()
+            g = graphs[parts[0]]
+            if 'http' not in parts[2]:
+                parts[2] = parts[1] + parts[2]
+            g.addEdge(parts[1].strip(), parts[2].strip())
+    return graphs
+    
+
+def formatJSON(gid, graph):
+    """Given a graph, groups nodes according to connected components and returns
+       a json for the d3 front-end to use"""
+    nodes = []
+    links = []
+    components = graph.getConnectedComponents()
+    for n_id in graph.nodes:
+        nodes.append({'url':graph.nodes[n_id], 'id': n_id, 'group':graph.groups[n_id]})
+    for src, dests in graph.adjlist.items():
+        for dest in dests:
+            if dest:
+                links.append({'source':src, 'target': dest})
+    links = [ {'value':1,'source': l['source'], 'target':l['target']} for l in links]
+    return {
+            'nodes':nodes,
+            'links':links, 
+            'groups': [gid for gid, ns in components.items()]
+           }
+
 class Graph:
     def __init__(self):
         self.nodes = {} # id -> elem
