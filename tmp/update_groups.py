@@ -15,6 +15,8 @@ with open('tmp/clustering.csv') as f:
         group = parts[-1].strip()
         url = parts[0].partition(',')[-1].strip()
         urls.append((url,int(group)))
-    
+
+db.engine.execute("DELETE FROM keywords")
+
 for u, g in urls:
     db.engine.execute(mkq(u,g))
