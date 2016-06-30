@@ -5,3 +5,5 @@ data/*
 __pycache__/
 backups/
 rootkey.csv
+scripts/download_keywords.sh
+scripts/connectaws.sh

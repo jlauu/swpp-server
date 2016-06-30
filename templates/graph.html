@@ -40,11 +40,20 @@ text {
     display: fixed;
     top: 0;
     left: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+#urlbox li {
+    list-style-type: none;
 }
 
 </style>
 </head>
 <body onload="SWPP.init({{json}})">
     <div class="svg-container"></div>
+    <div id="urlbox">
+        <ul></ul>
+    </div>
 </body>
 </html>

@@ -15,14 +15,21 @@ var SWPP = (function () {
         theta: null,
         reset_foci: null,
         ring_clusters: [],
+        dispatch: null,
+        selected_nodes: []
     };
-    var cluster_representatives = {}
+    var cluster_representatives = {};
     
     var init_focus_tick = function () {
         swpp.setRingFocus();
         swpp.reset_foci = swpp.setRingFocus;
         return ring_foci_tick;
-    }
+    };
+
+    swpp.selectCluster = function (id) {
+        swpp.selected = id;
+        swpp.dispatch.select(id);
+    };
 
     swpp.ring_shift_left = function () {
         swpp.force.alpha(.2);
@@ -30,9 +37,9 @@ var SWPP = (function () {
             swpp.ring_clusters.push(swpp.selected);
             swpp.foci.push({x:swpp.width/2, y:swpp.height/2});
         }
-        swpp.selected = swpp.ring_clusters.shift();
+        swpp.selectCluster(swpp.ring_clusters.shift());
         swpp.foci.shift();
-    }
+    };
 
     swpp.ring_shift_right = function () {
         swpp.force.alpha(.2);
@@ -40,9 +47,9 @@ var SWPP = (function () {
             swpp.ring_clusters = [swpp.selected].concat(swpp.ring_clusters);
             swpp.foci = [{x:swpp.width/2, y:swpp.height/2}].concat(swpp.foci);
         }
-        swpp.selected = swpp.ring_clusters.pop();
+        swpp.selectCluster(swpp.ring_clusters.pop());
         swpp.foci.pop();
-    }
+    };
 
     swpp.setRingFocus = function () {
         if (swpp.data) {
@@ -66,7 +73,7 @@ var SWPP = (function () {
             });
             swpp.force.start();
         }
-    }
+    };
 
     function ring_foci_tick (theta) {
         var r = Math.min(swpp.width, swpp.height) / 3;
@@ -260,6 +267,20 @@ var SWPP = (function () {
              node.classed('hover', false);
              d3.selectAll('text#node'+d.id.toString()).remove();
           });
+
+        // Cluster Selected Events
+        swpp.dispatch = d3.dispatch('select');
+        swpp.dispatch.on('select', function (g_id) {
+            var urlbox = d3.select("#urlbox");
+            var nodes = d3.selectAll('.node')
+                .filter(function (d) {return d.group == g_id;});
+            urlbox.selectAll("li").remove()
+            console.log(nodes);
+            nodes.each(function (n) {
+                urlbox.select("ul").append("li")
+                    .text(n.url);
+            });
+        });
 
         // Key Events
         d3.select("body")
