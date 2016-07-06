@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import literal, or
+from sqlalchemy import literal, or_
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from sqlalchemy.sql import text
