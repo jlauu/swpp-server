@@ -2,6 +2,7 @@
 <head>
 <title>SWPP - Graph Display</title>
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="{{url_for('static', filename='SWPPGraph.js')}}"></script>
 <script src="{{url_for('static', filename='main.js')}}"></script>
 <style>
 
@@ -50,7 +51,7 @@ text {
 
 </style>
 </head>
-<body onload="SWPP.init({{json}})">
+<body onload="init({{json}})">
     <div class="svg-container"></div>
     <div id="urlbox">
         <ul></ul>

@@ -1,4 +1,5 @@
 import os
+from sqlalchemy import literal, or
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from sqlalchemy.sql import text
@@ -40,6 +41,8 @@ def update_keywords():
         queries.append(upsert_keywords(url, kws))
     for q in queries:
         db.engine.execute(q)
+
+## TODO remove broken links command
 
 if __name__ == '__main__':
     manager.run()
