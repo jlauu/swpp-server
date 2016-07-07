@@ -140,6 +140,7 @@ var mixin = (function () {
 
             this.setRingFocus();
             this.reset_foci = this.setRingFocus;
+
             // Hovering effects
             d3.selectAll(".node")
               .on("mouseover", function (d) {
@@ -160,6 +161,10 @@ var mixin = (function () {
                  var node = d3.select(this)
                  node.classed('hover', false);
                  d3.selectAll('text#node'+d.id.toString()).remove();
+              })
+              .on("dblclick", function (d) {
+                 var win = window.open(d.url, '_blank');
+                 win.focus();
               });
 
             // Cluster Selected Events
