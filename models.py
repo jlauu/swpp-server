@@ -2,7 +2,23 @@ from sqlalchemy.dialects.postgresql import JSON, ARRAY
 
 from app import db
 
+class UserClusters(db.Model):
+    """User-made or accepted clusterings"""
+    __tablename__ = "user_clusters"
+    id = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.String(),nullable=False)
+    name = db.Column(db.String(),nullable=False)
+    keywords = db.Column(ARRAY(db.String()))
+    cluster = db.Column(JSON,nullable=False)
+
+    def __init__(self, json):
+        self.userid = json['userid']
+        self.name = json['name']
+        self.keywords = json['keywords']
+        self.cluster = json['cluster']
+
 class UrlKeywords(db.Model):
+    """Keywords metadata for a url, and clustering id based on them"""
     __tablename__ = "keywords"
     url = db.Column(db.String(), unique=True, primary_key=True)
     keywords = db.Column(ARRAY(db.String()))
