@@ -37,6 +37,9 @@ def send():
         elif ty == 'interactions':
             [db.session.add(i) for i in map(InteractionEvent, data)]
             db.session.commit()
+        elif ty == 'cluster':
+            [db.session.add(c) for c in map(UserCluster, data)]
+            db.session.commit()
         else:
             return "Bad request"
         return "Received"
