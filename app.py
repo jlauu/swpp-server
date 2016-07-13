@@ -41,8 +41,8 @@ def send():
             [db.session.add(c) for c in map(UserCluster, data)]
             db.session.commit()
         else:
-            return "Bad request"
-        return "Received"
+            return "Bad request: " + ty
+        return "Received: " + ty
     else:
         return "Bad request"
 
