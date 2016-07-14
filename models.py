@@ -48,7 +48,7 @@ class InteractionEvent(db.Model):
     target = db.Column(db.String());
     
     def __init__(self, json):
-        self.userid = json['userID']
+        self.userid = json['userid']
         self.url = json['url']
         self.event = json['event']
         self.time = json['time']
