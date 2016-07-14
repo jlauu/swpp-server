@@ -22,13 +22,19 @@ def graph():
    graph = UserGraph.query.filter_by(userid=request.args.get('uid')).first()
    return render_template('graph.html', json=graph.data)
 
+@app.route('/clusters', methods=['GET'])
+def graph():
+   name = request.args.get('name')
+   userid = request.args.get('uid')
+   graph = UserGraph.query.filter_by(and_(UserGraph.name=name, UserGraph.userid=userid)).first()
+   return render_template('graph.html', json=graph.cluster)
+
 @app.route('/send', methods=['POST'])
 def send():
     if request.headers['Content-type'] == 'application/json':
         msg = request.get_json()
         ty = msg['type']
         data = msg['data']
-        print(ty, type(data), data)
         if ty == 'pages':
             [db.session.add(pv) for pv in map(PageVisit, data)]
             db.session.commit()
