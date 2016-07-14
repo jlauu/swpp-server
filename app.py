@@ -11,9 +11,9 @@ from models import *
 
 @app.route('/', methods=['GET'])
 def index():
-  if request.args.get('uid') is not None:
-      graph = UserGraph.query.filter_by(userid=request.args.get('uid')).first()
-      return json.dumps(graph.data)
+  if request.args.get('uid') is not None and request.args.get('cluster') is not None:
+      graphs = UserCluster.query.filter_by(and_(UserGraph.name=name, UserGraph.userid=userid))
+      return json.dumps(graphs)
   else:
       return ""
 
@@ -23,10 +23,10 @@ def graph():
    return render_template('graph.html', json=graph.data)
 
 @app.route('/clusters', methods=['GET'])
-def graph():
+def clusters():
    name = request.args.get('name')
    userid = request.args.get('uid')
-   graph = UserGraph.query.filter_by(and_(UserGraph.name=name, UserGraph.userid=userid)).first()
+   graph = UserCluster.query.filter_by(and_(UserCluster.name=name, UserCluster.userid=userid)).first()
    return render_template('graph.html', json=graph.cluster)
 
 @app.route('/send', methods=['POST'])
