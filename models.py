@@ -2,7 +2,7 @@ from sqlalchemy.dialects.postgresql import JSON, ARRAY
 
 from app import db
 
-class UserClusters(db.Model):
+class UserCluster(db.Model):
     """User-made or accepted clusterings"""
     __tablename__ = "user_clusters"
     id = db.Column(db.Integer, primary_key=True)
