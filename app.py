@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, json, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_ as and_clause
+from sqlalchemy import and_ 
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -13,7 +13,7 @@ from models import *
 @app.route('/', methods=['GET'])
 def index():
   if request.args.get('uid') is not None and request.args.get('cluster') is not None:
-      graphs = UserCluster.query.filter_by(and_clause(UserCluster.name=name, UserCluster.userid=userid))
+      graphs = UserCluster.query.filter_by(and_(name=name, userid=userid))
       return json.dumps(graphs)
   else:
       return ""
@@ -27,7 +27,7 @@ def graph():
 def clusters():
    name = request.args.get('name')
    userid = request.args.get('uid')
-   graph = UserCluster.query.filter_by(and_clause(UserCluster.name=name, UserCluster.userid=userid)).first()
+   graph = UserCluster.query.filter_by(and_(name=name, userid=userid)).first()
    return render_template('graph.html', json=graph.cluster)
 
 @app.route('/send', methods=['POST'])
