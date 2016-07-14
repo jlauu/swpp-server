@@ -13,7 +13,7 @@ from models import *
 @app.route('/', methods=['GET'])
 def index():
   if request.args.get('uid') is not None and request.args.get('cluster') is not None:
-      graphs = UserCluster.query.filter_by(and_(UserGraph.name=name, UserGraph.userid=userid))
+      graphs = UserCluster.query.filter_by(and_(UserCluster.name=name, UserCluster.userid=userid))
       return json.dumps(graphs)
   else:
       return ""
