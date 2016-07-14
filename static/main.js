@@ -1,9 +1,9 @@
 'use strict';
 var config = {
-    charge: -120,
+    charge: -300,
     gravity: 0,
-    linkDistance: 30,
-    linkStrength: .2,
+    linkDistance: 40,
+    linkStrength: .3,
     friction: .85
 };
 var sg;
