@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, json, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import and_
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(os.environ['APP_SETTINGS'])
