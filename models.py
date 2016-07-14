@@ -12,7 +12,7 @@ class UserCluster(db.Model):
     cluster = db.Column(JSON,nullable=False)
 
     def __init__(self, json):
-        print(json)
+        print("Creating user cluster with...", json)
         self.userid = json['userID']
         self.name = json['name']
         self.keywords = json['keywords']
