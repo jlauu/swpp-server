@@ -41,10 +41,10 @@ def send():
             [db.session.add(c) for c in map(UserCluster, data)]
             db.session.commit()
         else:
-            return "Bad request"
-        return "Received"
+            return "Bad request (%s): %s".format(ty, request)
+        return "Received: " + ty
     else:
-        return "Bad request"
+        return "Bad request: " + str(data)
 
 if __name__ == '__main__':
     app.run()
