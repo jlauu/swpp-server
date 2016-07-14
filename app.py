@@ -28,6 +28,7 @@ def send():
         msg = request.get_json()
         ty = msg['type']
         data = msg['data']
+        print(ty, data)
         if ty == 'pages':
             [db.session.add(pv) for pv in map(PageVisit, data)]
             db.session.commit()
