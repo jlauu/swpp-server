@@ -7,9 +7,10 @@ class UserCluster(db.Model):
     __tablename__ = "user_clusters"
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.String(),nullable=False)
-    name = db.Column(db.String(),nullable=False)
+    name = db.Column(db.String(),unique=True,nullable=False)
     keywords = db.Column(ARRAY(db.String()))
     cluster = db.Column(JSON,nullable=False)
+    __table_args__ = (db.UniqueConstraint('userid', 'name', name='u_name'),)
 
     def __init__(self, json):
         print("Creating user cluster with...", type(json), json)
