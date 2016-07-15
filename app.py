@@ -14,13 +14,13 @@ from models import *
 def index():
   if request.args.get('uid') is not None:
       userid = request.args.get('uid')
-      graphs = UserCluster.query.filter_by(userid=userid)
+      graphs = UserCluster.query.filter_by(userid=userid).all()
+      print(graphs)
       return json.dumps([{
-          name: g.name, 
-          keywords: g.keywords,
-          userid: g.userid,
-          graph: g.cluster
-      }] for g in graphs)
+          'name': g.name, 
+          'keywords': g.keywords, 
+          'graph': g.cluster
+      } for g in graphs])
   else:
       return ""
 
