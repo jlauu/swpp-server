@@ -15,12 +15,12 @@ def index():
   if request.args.get('uid') is not None:
       userid = request.args.get('uid')
       graphs = UserCluster.query.filter_by(userid=userid)
-      return json.dumps({
+      return json.dumps([{
           name: g.name, 
           keywords: g.keywords,
           userid: g.userid,
           graph: g.cluster
-      } for g in graphs)
+      }] for g in graphs)
   else:
       return ""
 
