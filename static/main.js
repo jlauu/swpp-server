@@ -6,7 +6,7 @@ var config = {
     linkStrength: .3,
     friction: .4
 };
-var sg;
+
 function init (json) {
     config.json = json;
     ServerGraph.init(config);
