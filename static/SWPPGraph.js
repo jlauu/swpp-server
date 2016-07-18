@@ -1,48 +1,111 @@
-'use strict';
-// Base Graph interface
-var SWPP = function (mixin) {
-    var instance;
+'user strict';
+//  SWPPGraph.js - Base force-layout graphical module
+var SWPP = (function (window) {
+    var module = {
+        graph: null, // the processed graph json
+        data: null, // the original data json
+        config: null // the original data and other options
+    },
+    width = null,
+    height = null,
+    force = null,
+    // Cached d3 selections
+    links = null,
+    nodes = null,
+    svg = null;
 
-    function SWPPGraph(config) {
-        this.config = config || {};
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.svg = null;  
-        this.data = null; 
-        this.graph = null;
-        this.force = null;
-        this.path = null;
-        this.nodes = null;
+    // Sets fields in links to actual node references
+    function fixLinkReferences (config) {
+        var links = [];
+        config.json.links.forEach(function (e) {
+            var sourceNode = config.json.nodes.find(function (n) {
+                return n.id === e.source;
+            });
+            var targetNode = config.json.nodes.find(function (n) {
+                return n.id === e.target;
+            });
+            links.push({
+                source: sourceNode,
+                target: targetNode,
+                value: e.value
+            });
+        });
+        return links;
     }
+    
+    module.getWidth = function () {
+        return svg.attr('width');
+    };
+
+    module.getHeight = function () {
+        return svg.attr('height');
+    };
 
     // Start/initialize d3's force layout
-    SWPPGraph.prototype.start = function () {
-        var config = this.config;
-        this.force = d3.layout.force()
+    module.init = function (cfg) {
+        module.config = cfg;
+        var config = cfg;
+        width = window.innerWidth,
+        height = window.innerHeight,
+        force = d3.layout.force()
             .charge(config.charge || -120)
             .gravity(config.gravity || 0.3)
             .linkDistance(config.linkDistance || 15)
             .linkStrength(config.linkStrength || .2)
-            .friction(config.friction || .85)
-            .size([this.width,this.height])
+            .size([width,height])
         
-        var color = d3.scale.category20();
-        this.svg = d3.select("div.svg-container").append("svg")
+        svg = d3.select("div.svg-container").append("svg")
             .attr("preserveAspectRatio", "xMinYMin meet")
             .classed("svg-content-responsive", true);
-        this.resize();
-        var swpp = this;
+        module.resize()
         d3.select(window).on('resize', function () {
-            swpp.resize();
+            module.resize();
         });
-        this.data = config.json;
-        this.graph = this.preprocess(config);
-        this.force
-            .nodes(this.graph.nodes)
-            .links(this.graph.links)
+        module.data = config.json;
+        module.graph = module.preprocess(config);
+        var graph = module.graph;
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+        // Set edge look and behavior
+        links = svg.selectAll(".link")
+            .data(force.links());
+        module.defineLinks(links);
 
+        // Set node look and behavior
+        nodes = svg.selectAll(".node")
+            .data(force.nodes(), function (d) {return d.id;})
+        module.defineNodes(nodes);
+
+        function tick (e) {
+            module.linkTick(e, links);
+            module.nodeTick(e, nodes);
+        }
+
+        force
+            .on("tick", tick)
+        module.preStart(force, svg, nodes, links);
+        force.start();
+    }
+
+    module.defineNodes = function (nodes) {
+          var color = d3.scale.category20();
+          nodes.enter().append("g")
+            .attr("class", "node")
+            .attr("cx", function (d) {return d.x;})
+            .attr("cy", function (d) {return d.y;})
+            .call(force.drag)
+         nodes.append("circle")
+            .style("fill", function (d) {
+                return color(module.config.node_style_fill || d.group); 
+            })
+            .attr("r", module.config.node_attr_r || 5)
+    }
+
+    // Draws edges with arrows - http://bl.ocks.org/d3noob/5141278
+    module.defineLinks = function () {
         // build the arrow.
-        this.svg.append("svg:defs").selectAll("marker")
+        svg.append("svg:defs").selectAll("marker")
             .data(["end"])      // Different link/path types can be defined here
           .enter().append("svg:marker")    // This section adds in the arrows
             .attr("id", String)
@@ -54,101 +117,56 @@ var SWPP = function (mixin) {
             .attr("orient", "auto")
           .append("svg:path")
             .attr("d", "M0, -5L10,0L0,5");
-
         // add the links and the arrows
-        this.path = this.svg.append("svg:g").selectAll("path")
-            .data(this.force.links())
+        links = svg.append("svg:g").selectAll("path")
+            .data(force.links())
           .enter().append("svg:path")
-        //    .attr("class", function(d) { return "link " + d.type; })
+            .attr("class", function(d) { return "link " + d.type; })
             .attr("class", "link")
             .attr("marker-end", "url(#end)");
+    };
 
-        this.nodes = this.svg.selectAll(".node")
-            .data(this.force.nodes(), function (d) {return d.id;})
-          .enter().append("g")
-            .attr("class", "node")
-            .attr("cx", function (d) {return d.x;})
-            .attr("cy", function (d) {return d.y;})
-            .style("fill", function (d) {
-                return color(config.node_style_fill || d.group); 
-            })
-            .call(this.force.drag)
-
-        this.nodes.append("circle")
-            .attr("r", config.node_attr_r || 5);
-        this.force
-            .on("tick", this.tick())
-            .start();
-        this.postStart();
-    }
-    
-    SWPPGraph.prototype.postStart = function () {};
+    // Extendable virtual function
+    module.preStart = function () {};
 
     // Update point and edge positons
-    SWPPGraph.prototype.tick = function (e) {
-        var path = this.path;
-        var nodes = this.nodes;
-        return function (e) {
-            path.attr("d", function(d) {
-                var dx = d.target.x - d.source.x,
-                    dy = d.target.y - d.source.y,
-                    dr = Math.sqrt(dx * dx + dy * dy);
-                return "M" + 
-                    d.source.x + "," + 
-                    d.source.y + "A" + 
-                    dr + "," + dr + " 0 0,1 " + 
-                    d.target.x + "," + 
-                    d.target.y;
-            });
-            nodes.attr("transform", function (d, i) { 
-                return ["translate(",d.x,",",d.y,")"].join(" ");
-            });
-        };
-    }
+    module.linkTick = function (e, links) {
+        links.attr("d", function(d) {
+            var dx = d.target.x - d.source.x,
+                dy = d.target.y - d.source.y,
+                dr = Math.sqrt(dx * dx + dy * dy);
+            return "M" + 
+                d.source.x + "," + 
+                d.source.y + "A" + 
+                dr + "," + dr + " 0 0,1 " + 
+                d.target.x + "," + 
+                d.target.y;
+        });
+    };
+
+    module.nodeTick = function (e, nodes) {
+        nodes.attr("transform", function (d, i) { 
+            return ["translate(",d.x,",",d.y,")"].join(" ");
+        });
+    };
     // Resize to fit window
-    SWPPGraph.prototype.resize = function () {
-        var width = window.innerWidth;
-        var height = window.innerHeight;
-        this.svg
+    module.resize = function () {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        svg
           .attr("viewBox", "0 0 "+width+" "+height)
           .attr("width",  width)
           .attr("height", height);
-        this.force.size([width,height]).resume();
-        this.width = width;
-        this.height = height;
-    }
-    //Virtual function: returns subset of data to be graphed
-    SWPPGraph.prototype.preprocess = function (config) {
-        var graph = {nodes:config.json.nodes, links:[], groups:config.json.groups};
+        force.size([width,height]).resume();
+    };
+
+    // Virtual function to modify or select a subset of the original graph
+    module.preprocess = function (config) {
+        var graph = {nodes:config.json.nodes, groups:config.json.groups};
         // Build links array
-        config.json.links.forEach(function (e) {
-            var sourceNode = config.json.nodes.find(function (n) {
-                return n.id === e.source;
-            });
-            var targetNode = config.json.nodes.find(function (n) {
-                return n.id === e.target;
-            });
-            graph.links.push({
-                source: sourceNode,
-                target: targetNode,
-                value: e.value
-            });
-        });
+        graph.links = fixLinkReferences (config);
         return graph;
     }
-
-    if (mixin) {
-        if (mixin.extension) {
-            mixin.extension(SWPPGraph);
-        }
-    }
-               
-    return {
-        getInstance: function (config) {
-            if (!instance) {
-                instance = new SWPPGraph(config);
-            }
-            return instance;
-        }
-   };
-}
+    
+    return module;
+})(window);
