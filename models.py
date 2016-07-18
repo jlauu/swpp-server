@@ -13,7 +13,6 @@ class UserCluster(db.Model):
     __table_args__ = (db.UniqueConstraint('userid', 'name', name='u_name'),)
 
     def __init__(self, json):
-        print("Creating user cluster with...", type(json), json)
         self.userid = json['userID']
         self.name = json['name']
         self.keywords = json['keywords']
