@@ -64,7 +64,7 @@ def upsertUserCluster(c):
     print("UPSERTING...")
     [print(type(a), a) for a in [c.userid, c.name, c.keywords, c.cluster]]
     query = text("""INSERT INTO user_clusters as cs (userid, name, keywords, cluster)\
-                 VALUES(:u, :n, :k, :cls) ON CONFLICT (u_name) DO UPDATE SET \
+                 VALUES(:u, :n, :k, :cls) ON CONFLICT (userid, name) DO UPDATE SET \
                  keywords = EXCLUDED.keywords, cluster = EXCLUDED.cluster;""").\
                  bindparams(u=c.userid, n=c.name, k=c.keywords, cls=c.cluster)
     db.engine.execute(query)
