@@ -1,4 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSON, ARRAY
+from sqlalchemy import literal
 
 from app import db
 
@@ -16,7 +17,7 @@ class UserCluster(db.Model):
         self.userid = json['userID']
         self.name = json['name']
         self.keywords = json['keywords']
-        self.cluster = json['graph']
+        self.cluster = litera(json['graph'], type_=JSON)
 
 class UrlKeywords(db.Model):
     """Keywords metadata for a url, and clustering id based on them"""
