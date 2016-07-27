@@ -16,7 +16,7 @@ class UserCluster(db.Model):
         self.userid = json['userID']
         self.name = json['name']
         self.keywords = json['keywords']
-        self.cluster = json['cluster']
+        self.cluster = json['graph']
 
 class UrlKeywords(db.Model):
     """Keywords metadata for a url, and clustering id based on them"""
