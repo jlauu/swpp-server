@@ -41,7 +41,7 @@ def clusters():
    elif userid:
        names = [ c.name for c in UserCluster.query.filter_by(userid=userid).all()]
        url = "https://swpp-server-stage.herokuapp.com/clusters?"
-       links = [ '<a href="{0}{1}">{2}</a>'.format(url, urlencode({'uid':userid,'name':n}), n) for n in names) ] 
+       links = [ '<a href="{0}{1}">{2}</a>'.format(url, urlencode({'uid':userid,'name':n}), n) for n in names ] 
        return "Names for user {0}:<br>{1}".format(userid,'<br>'.join(names))
    else:
        return "Bad query"
