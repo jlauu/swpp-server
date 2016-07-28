@@ -34,8 +34,14 @@ def graph():
 def clusters():
    name = request.args.get('name')
    userid = request.args.get('uid')
-   graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
-   return render_template('graph.html', json=graph.cluster)
+   if userid and name:
+       graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
+       return render_template('graph.html', json=graph.cluster)
+   elif userid:
+       names = [ c.name for c in UserCluster.query.filter_by(userid=userid).all()]
+       return "Names for user {1}:\n{2}".format(userid,'\n'.join(names))
+   else:
+       return "Bad query"
 
 @app.route('/send', methods=['POST'])
 def send():
