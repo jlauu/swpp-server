@@ -1,5 +1,5 @@
 import os
-from urllib import urlencode
+from urllib.parse import urlencode
 from flask import Flask, request, json, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_ 
