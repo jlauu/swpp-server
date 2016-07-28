@@ -39,7 +39,7 @@ def clusters():
        return render_template('graph.html', json=graph.cluster)
    elif userid:
        names = [ c.name for c in UserCluster.query.filter_by(userid=userid).all()]
-       return "Names for user {0}:\n{1}".format(userid,'\n'.join(names))
+       return "Names for user {0}:<br>{1}".format(userid,'<br>'.join(names))
    else:
        return "Bad query"
 
