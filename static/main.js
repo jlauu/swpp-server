@@ -150,7 +150,7 @@ var ServerGraph = (function (SWPP) {
              d3.selectAll('text#node'+d.id.toString()).remove();
           })
           .on("dblclick", function (d) {
-             var win = window.open(d.url, '_blank');
+             var win = window.open('http://'+d.url, '_blank');
              win.focus();
           });
 
