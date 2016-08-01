@@ -35,7 +35,8 @@ def graph():
 @app.route('/clusters', methods=['GET'])
 def clusters():
    name = request.args.get('name')
-   userid = request.args.get('uid') if userid and name:
+   userid = request.args.get('uid')
+   if userid and name:
        graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
        return render_template('graph.html', json=graph.cluster)
    elif userid:
