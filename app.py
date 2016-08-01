@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlencode
 from flask import Flask, request, json, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_ 
@@ -34,8 +35,16 @@ def graph():
 def clusters():
    name = request.args.get('name')
    userid = request.args.get('uid')
-   graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
-   return render_template('graph.html', json=graph.cluster)
+   if userid and name:
+       graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
+       return render_template('graph.html', json=graph.cluster)
+   elif userid:
+       names = [ c.name for c in UserCluster.query.filter_by(userid=userid).all()]
+       url = "https://swpp-server-stage.herokuapp.com/clusters?"
+       links = [ '<a href="{0}{1}">{2}</a>'.format(url, urlencode({'uid':userid,'name':n}), n) for n in names ] 
+       return "Names for user {0}:<br>{1}".format(userid,'<br>'.join(links))
+   else:
+       return "Bad query"
 
 @app.route('/send', methods=['POST'])
 def send():

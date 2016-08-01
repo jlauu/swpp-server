@@ -136,7 +136,7 @@ var ServerGraph = (function (SWPP) {
                 .attr("dy", ".35em")
                 .text(function (d) {
                     var t = document.createElement('a');
-                    t.href = d.url;
+                    t.href = 'http://' + d.url;
                     t = t.hostname + t.pathname;
                     t = t.split('www.')
                     t = t.length > 1 ? t[1] : t[0];
@@ -149,7 +149,7 @@ var ServerGraph = (function (SWPP) {
              d3.selectAll('text#node'+d.id.toString()).remove();
           })
           .on("dblclick", function (d) {
-             var win = window.open(d.url, '_blank');
+             var win = window.open('http://'+d.url, '_blank');
              win.focus();
           });
 
