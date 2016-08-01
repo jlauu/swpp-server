@@ -35,8 +35,7 @@ def graph():
 @app.route('/clusters', methods=['GET'])
 def clusters():
    name = request.args.get('name')
-   userid = request.args.get('uid')
-   if userid and name:
+   userid = request.args.get('uid') if userid and name:
        graph = UserCluster.query.filter(and_(UserCluster.name==name, UserCluster.userid==userid)).first()
        return render_template('graph.html', json=graph.cluster)
    elif userid:
@@ -75,8 +74,10 @@ def upsertUserCluster(c):
     [print(type(a), a) for a in [c.userid, c.name, c.keywords, c.cluster]]
     if c.id:
         query = text("""INSERT INTO user_clusters as cs (id, userid, name, keywords, cluster)\
-                VALUES(:i, :u, :n, :k, :cls) ON CONFLICT (userid, name) DO UPDATE SET \
-                     keywords = EXCLUDED.keywords, cluster = EXCLUDED.cluster;""").\
+                VALUES(:i, :u, :n, :k, :cls) ON CONFLICT (id) DO UPDATE SET \
+                     name = EXCLUDED.name,\
+                     keywords = EXCLUDED.keywords,\
+                     cluster = EXCLUDED.cluster;""").\
                      bindparams(i=c.id, u=c.userid, n=c.name, k=c.keywords, cls=c.cluster)
     else:
         query = text("""INSERT INTO user_clusters as cs (userid, name, keywords, cluster)\
