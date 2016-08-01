@@ -17,8 +17,7 @@ var ServerGraph = (function (SWPP) {
         foci = [],
         ring_clusters = [],
         selected = null,
-        focus_tick = null,
-        theta = null,
+        focus_tick = null, theta = null,
         reset_foci = null,
         dispatch = null,
         selected_nodes = [];
@@ -176,6 +175,7 @@ var ServerGraph = (function (SWPP) {
                     ring_shift_right();
                 }
             });
+        ring_shift_right();
     }
     return SWPP;
 })(SWPP || {});
