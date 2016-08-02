@@ -64,6 +64,9 @@ def send():
             db.session.commit()
         elif ty == 'cluster':
             [upsertUserCluster(c) for c in map(UserCluster, data)]
+        elif ty == 'forest':
+            [db.session.add(f) for f in map(ClusterHierarchy, data)]
+            db.session.commit()
         else:
             return "Bad request (%s): %s".format(ty, request)
         return "Received: " + ty

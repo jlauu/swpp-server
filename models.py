@@ -3,6 +3,19 @@ from flask.json import dumps
 
 from app import db
 
+class ClusterHierarchy(db.Model):
+    """Forest hierarchy for UserClusters"""
+    __tablename__ = "cluster_hierarchy"
+    id = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.String(),nullable=False)
+    parent = db.Column(db.Integer, unique=True)
+    children = db.Column(ARRAY(db.Integer), nullable=True)
+
+    def __init__(self, json):
+        self.userid = json['userID']
+        self.parent = json['parent']
+        self.children = json['children']
+
 class UserCluster(db.Model):
     """User-made or accepted clusterings"""
     __tablename__ = "user_clusters"
