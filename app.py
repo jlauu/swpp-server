@@ -16,14 +16,16 @@ from models import *
 def index():
   if request.args.get('uid') is not None:
       userid = request.args.get('uid')
-      graphs = UserCluster.query.filter_by(userid=userid).all()
+      clusters = UserCluster.query.filter_by(userid=userid).all()
       name = request.args.get('name')
-      return json.dumps([{
+      clusters = [{
           'id' : g.id,
           'name': g.name, 
           'keywords': g.keywords, 
           'graph': g.cluster
-      } for g in graphs if not name or name == g.name])
+      } for g in graphs if not name or name == g.name]
+      h = ClusterHieararchy.query.filter_by(userid=userid).first()
+      return json.dumps({clusters: clusters, hierarchy: h})
   else:
       return ""
 
