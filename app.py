@@ -19,10 +19,10 @@ def index():
       clusters = UserCluster.query.filter_by(userid=userid).all()
       name = request.args.get('name')
       clusters = [{
-          'id' : g.id,
-          'name': g.name, 
-          'keywords': g.keywords, 
-          'graph': g.cluster
+          'id' : c.id,
+          'name': c.name, 
+          'keywords': c.keywords, 
+          'graph': c.cluster
       } for c in clusters if not name or name == c.name]
       h = ClusterHieararchy.query.filter_by(userid=userid).first()
       return json.dumps({clusters: clusters, hierarchy: h})
