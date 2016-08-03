@@ -24,7 +24,7 @@ def index():
           'keywords': c.keywords, 
           'graph': c.cluster
       } for c in clusters if not name or name == c.name]
-      h = ClusterHieararchy.query.filter_by(userid=userid).first()
+      h = ClusterHierarchy.query.filter_by(userid=userid).first()
       return json.dumps({clusters: clusters, hierarchy: h})
   else:
       return ""
