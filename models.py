@@ -8,13 +8,11 @@ class ClusterHierarchy(db.Model):
     __tablename__ = "cluster_hierarchy"
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.String(),nullable=False)
-    parent = db.Column(db.Integer, unique=True)
-    children = db.Column(ARRAY(db.Integer), nullable=True)
+    data = db.Column(JSON,nullable=False)
 
     def __init__(self, json):
         self.userid = json['userID']
-        self.parent = json['parent']
-        self.children = json['children']
+        self.data = dumps(json['data'])
 
 class UserCluster(db.Model):
     """User-made or accepted clusterings"""

@@ -65,13 +65,20 @@ def send():
         elif ty == 'cluster':
             [upsertUserCluster(c) for c in map(UserCluster, data)]
         elif ty == 'forest':
-            [db.session.add(f) for f in map(ClusterHierarchy, data)]
-            db.session.commit()
+            [upsertHierarchy(f) for f in map(ClusterHierarchy, data)]
         else:
             return "Bad request (%s): %s".format(ty, request)
         return "Received: " + ty
     else:
         return "Bad request: " + str(data)
+
+def upsertHierarchy(f):
+    query = text("""INSERT INTO cluster_hierarchy as ch (userid, data)\
+                 VALUES(:u, :d) ON CONFLICT (userid) DO UPDATE SET \
+                 data = EXCLUDED.data;""").\
+                 bindparams(u=f.userid, d=f.data)
+    db.engine.execute(query)
+    
 
 def upsertUserCluster(c):
     print("UPSERTING...")
