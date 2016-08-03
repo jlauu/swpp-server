@@ -7,7 +7,7 @@ class ClusterHierarchy(db.Model):
     """Forest hierarchy for UserClusters"""
     __tablename__ = "cluster_hierarchy"
     id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.String(),nullable=False)
+    userid = db.Column(db.String(),unique=True,nullable=False)
     data = db.Column(JSON,nullable=False)
 
     def __init__(self, json):
