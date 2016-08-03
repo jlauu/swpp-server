@@ -65,7 +65,7 @@ def send():
         elif ty == 'cluster':
             [upsertUserCluster(c) for c in map(UserCluster, data)]
         elif ty == 'forest':
-            [upsertHierarchy(f) for f in map(ClusterHierarchy, data)]
+            upsertHierarchy(ClusterHierarchy(data))
         else:
             return "Bad request (%s): %s".format(ty, request)
         return "Received: " + ty
