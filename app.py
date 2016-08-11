@@ -68,6 +68,10 @@ def send():
             [upsertUserCluster(c) for c in map(UserCluster, data)]
         elif ty == 'forest':
             upsertHierarchy(ClusterHierarchy(data))
+        elif ty == 'delete_cluster':
+            UserCluster.query.filter(and_(UserCluster.name==data['name'], 
+                                          UserCluster.userid==data['userid'])).delete()
+            db.session.commit()
         else:
             return "Bad request (%s): %s".format(ty, request)
         return "Received: " + ty
