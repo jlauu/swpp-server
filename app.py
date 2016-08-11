@@ -70,7 +70,7 @@ def send():
             upsertHierarchy(ClusterHierarchy(data))
         elif ty == 'delete_cluster':
             UserCluster.query.filter(and_(UserCluster.name==data['name'], 
-                                          UserCluster.userid==data['userid'])).delete()
+                                          UserCluster.userid==data['userID'])).delete()
             db.session.commit()
         else:
             return "Bad request (%s): %s".format(ty, request)
