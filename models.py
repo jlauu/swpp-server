@@ -22,6 +22,7 @@ class UserCluster(db.Model):
     name = db.Column(db.String(),unique=True,nullable=False)
     keywords = db.Column(ARRAY(db.String()))
     cluster = db.Column(JSON,nullable=False)
+    exclusions = db.Column(ARRAY(db.String()))
     __table_args__ = (db.UniqueConstraint('userid', 'name', name='u_name'),)
 
     def __init__(self, json):
@@ -30,6 +31,7 @@ class UserCluster(db.Model):
         self.name = json['name']
         self.keywords = json['keywords']
         self.cluster = dumps(json['graph'])
+        self.exclusions = jsons['exclusions']
 
 class UrlKeywords(db.Model):
     """Keywords metadata for a url, and clustering id based on them"""
