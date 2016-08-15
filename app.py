@@ -22,7 +22,8 @@ def index():
           'id' : c.id,
           'name': c.name, 
           'keywords': c.keywords, 
-          'graph': c.cluster
+          'graph': c.cluster,
+          'exclusions': c.exclusions
       } for c in clusters if not name or name == c.name]
       h = ClusterHierarchy.query.filter_by(userid=userid).first()
       return json.dumps({'clusters': clusters, 'hierarchy': h.data})
