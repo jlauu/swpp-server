@@ -100,7 +100,9 @@ def upsertUserCluster(c):
     else:
         query = text("""INSERT INTO user_clusters as cs (userid, name, keywords, cluster, exclusions)\
                      VALUES(:u, :n, :k, :cls, :e) ON CONFLICT (userid, name) DO UPDATE SET \
-                     keywords = EXCLUDED.keywords, cluster = EXCLUDED.cluster;""").\
+                     keywords = EXCLUDED.keywords,\
+                     exclusions = EXCLUDED.exclusions,
+                     cluster = EXCLUDED.cluster;""").\
                      bindparams(u=c.userid, n=c.name, k=c.keywords, cls=c.cluster, e=c.exclusions)
 
     db.engine.execute(query)
