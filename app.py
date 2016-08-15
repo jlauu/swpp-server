@@ -88,19 +88,20 @@ def upsertHierarchy(f):
 
 def upsertUserCluster(c):
     print("UPSERTING...")
-    [print(type(a), a) for a in [c.userid, c.name, c.keywords, c.cluster]]
+    [print(type(a), a) for a in [c.userid, c.name, c.keywords, c.cluster, c.exclusions]]
     if c.id:
-        query = text("""INSERT INTO user_clusters as cs (id, userid, name, keywords, cluster)\
-                VALUES(:i, :u, :n, :k, :cls) ON CONFLICT (id) DO UPDATE SET \
+        query = text("""INSERT INTO user_clusters as cs (id, userid, name, keywords, cluster, exclusions)\
+                VALUES(:i, :u, :n, :k, :cls, :e) ON CONFLICT (id) DO UPDATE SET \
                      name = EXCLUDED.name,\
                      keywords = EXCLUDED.keywords,\
+                     exclusions = EXCLUDED.exclusions,
                      cluster = EXCLUDED.cluster;""").\
-                     bindparams(i=c.id, u=c.userid, n=c.name, k=c.keywords, cls=c.cluster)
+                     bindparams(i=c.id, u=c.userid, n=c.name, k=c.keywords, cls=c.cluster, e=c.exclusions)
     else:
-        query = text("""INSERT INTO user_clusters as cs (userid, name, keywords, cluster)\
-                     VALUES(:u, :n, :k, :cls) ON CONFLICT (userid, name) DO UPDATE SET \
+        query = text("""INSERT INTO user_clusters as cs (userid, name, keywords, cluster, exclusions)\
+                     VALUES(:u, :n, :k, :cls, :e) ON CONFLICT (userid, name) DO UPDATE SET \
                      keywords = EXCLUDED.keywords, cluster = EXCLUDED.cluster;""").\
-                     bindparams(u=c.userid, n=c.name, k=c.keywords, cls=c.cluster)
+                     bindparams(u=c.userid, n=c.name, k=c.keywords, cls=c.cluster, e=c.exclusions)
 
     db.engine.execute(query)
 
